@@ -197,12 +197,55 @@ const App: FC = () => {
   })
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('home')
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true)
+  const [skillFilter, setSkillFilter] = useState('All')
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     document.documentElement.style.colorScheme = theme
     window.localStorage.setItem('portfolio-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      if (currentScrollY > lastScrollY && currentScrollY > 80 && !isMobileMenuOpen) {
+        setIsHeaderVisible(false)
+      } else {
+        setIsHeaderVisible(true)
+      }
+      lastScrollY = currentScrollY
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isMobileMenuOpen])
+
+  useEffect(() => {
+    const sectionIds = ['home', 'about', 'skills', 'work', 'process', 'contact']
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -50% 0px',
+      threshold: 0,
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id)
+        }
+      })
+    }, observerOptions)
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const handleResize = () => {
@@ -228,12 +271,17 @@ const App: FC = () => {
     setIsMobileMenuOpen(false)
   }
 
+  const filteredSkillGroups =
+    skillFilter === 'All'
+      ? skillGroups
+      : skillGroups.filter((group) => group.title === skillFilter)
+
   return (
     <div className="page-shell">
       <div className="orb orb-one" aria-hidden="true" />
       <div className="orb orb-two" aria-hidden="true" />
 
-      <header className="topbar">
+      <header className={`topbar ${isHeaderVisible ? 'header-visible' : 'header-hidden'}`}>
         <a className="brand" href="#home" onClick={handleNavClick}>
           <span className="brand-mark">P</span>
           <span>A.B.M. Ilman Farabi</span>
@@ -255,19 +303,39 @@ const App: FC = () => {
 
           <div className={`nav-wrapper ${isMobileMenuOpen ? 'is-open' : ''}`}>
             <nav className="nav" id="primary-navigation" aria-label="Primary">
-              <a href="#about" onClick={handleNavClick}>
+              <a
+                href="#about"
+                className={activeSection === 'about' ? 'active' : ''}
+                onClick={handleNavClick}
+              >
                 About
               </a>
-              <a href="#skills" onClick={handleNavClick}>
+              <a
+                href="#skills"
+                className={activeSection === 'skills' ? 'active' : ''}
+                onClick={handleNavClick}
+              >
                 Skills
               </a>
-              <a href="#work" onClick={handleNavClick}>
+              <a
+                href="#work"
+                className={activeSection === 'work' ? 'active' : ''}
+                onClick={handleNavClick}
+              >
                 Work
               </a>
-              <a href="#process" onClick={handleNavClick}>
+              <a
+                href="#process"
+                className={activeSection === 'process' ? 'active' : ''}
+                onClick={handleNavClick}
+              >
                 Process
               </a>
-              <a href="#contact" onClick={handleNavClick}>
+              <a
+                href="#contact"
+                className={activeSection === 'contact' ? 'active' : ''}
+                onClick={handleNavClick}
+              >
                 Contact
               </a>
             </nav>
@@ -369,8 +437,21 @@ const App: FC = () => {
             <h2>Your full technical stack, grouped for a clean portfolio display.</h2>
           </div>
 
+          <div className="skill-filters reveal">
+            {['All', 'Frontend', 'Programming', 'Data and Tools'].map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={`skill-filter-btn ${skillFilter === category ? 'active' : ''}`}
+                onClick={() => setSkillFilter(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
           <div className="skills-grid">
-            {skillGroups.map((group) => (
+            {filteredSkillGroups.map((group) => (
               <article className="skill-card reveal delay-1" key={group.title}>
                 <h3>{group.title}</h3>
                 <div className="skill-tags">
@@ -472,6 +553,21 @@ const App: FC = () => {
           </div>
         </section>
       </main>
+
+      <aside className="mobile-quick-bar" aria-label="Quick contact shortcuts">
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=ilmanfarabi@gmail.com" target="_blank" rel="noreferrer" title="Email me">
+          <ContactIcon type="email" />
+          <span>Email</span>
+        </a>
+        <a href="https://wa.me/8801853823669" target="_blank" rel="noreferrer" title="WhatsApp">
+          <ContactIcon type="whatsapp" />
+          <span>WhatsApp</span>
+        </a>
+        <a href="tel:+8801853823669" title="Call me">
+          <ContactIcon type="phone" />
+          <span>Call</span>
+        </a>
+      </aside>
     </div>
   )
 }

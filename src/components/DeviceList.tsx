@@ -2,8 +2,15 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import './DeviceList.css';
 
+interface Device {
+  id: string;
+  hostname: string;
+  platform: string;
+  connectedAt: string;
+}
+
 export default function DeviceList() {
-  const [devices, setDevices] = useState([]);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [connected, setConnected] = useState(false);
   const [serverUrl, setServerUrl] = useState('http://localhost:3001');
   const [customName, setCustomName] = useState('');
@@ -21,7 +28,7 @@ export default function DeviceList() {
       console.log('Connected to server');
     });
 
-    socket.on('devices', (deviceList) => {
+    socket.on('devices', (deviceList: Device[]) => {
       setDevices(deviceList);
     });
 
@@ -29,7 +36,9 @@ export default function DeviceList() {
       setConnected(false);
     });
 
-    return () => socket.disconnect();
+    return () => {
+      socket.disconnect();
+    };
   }, [serverUrl]);
 
   const handleNameChange = () => {

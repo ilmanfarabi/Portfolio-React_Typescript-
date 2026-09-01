@@ -166,14 +166,34 @@
 @media (max-width: 600px) {
   .device-list-container {
     padding: 15px;
+    margin: 10px auto;
+  }
+
+  .device-list-container h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
   }
 
   .devices-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .server-input,
   .device-name-input {
     flex-direction: column;
+    gap: 8px;
+  }
+
+  .server-input input,
+  .device-name-input input {
+    width: 100%;
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  .device-name-input button {
+    width: 100%;
+    min-height: 44px;
   }
 }

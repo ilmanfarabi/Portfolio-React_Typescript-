@@ -196,11 +196,37 @@ const App: FC = () => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     document.documentElement.style.colorScheme = theme
     window.localStorage.setItem('portfolio-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
+  const handleNavClick = () => {
+    setIsMobileMenuOpen(false)
+  }
 
   return (
     <div className="page-shell">
@@ -208,29 +234,54 @@ const App: FC = () => {
       <div className="orb orb-two" aria-hidden="true" />
 
       <header className="topbar">
-        <a className="brand" href="#home">
+        <a className="brand" href="#home" onClick={handleNavClick}>
           <span className="brand-mark">P</span>
           <span>A.B.M. Ilman Farabi</span>
         </a>
 
         <div className="topbar-actions">
-          <nav className="nav" aria-label="Primary">
-            <a href="#about">About</a>
-            <a href="#skills">Skills</a>
-            <a href="#work">Work</a>
-            <a href="#process">Process</a>
-            <a href="#contact">Contact</a>
-          </nav>
-
           <button
-            className="theme-toggle"
+            className="mobile-menu-toggle"
             type="button"
-            onClick={() => setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))}
-            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            onClick={() => setIsMobileMenuOpen((open) => !open)}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="primary-navigation"
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
-            <span aria-hidden="true">{theme === 'dark' ? '☀' : '☾'}</span>
-            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            <span className="hamburger-icon" aria-hidden="true">
+              {isMobileMenuOpen ? '✕' : '☰'}
+            </span>
           </button>
+
+          <div className={`nav-wrapper ${isMobileMenuOpen ? 'is-open' : ''}`}>
+            <nav className="nav" id="primary-navigation" aria-label="Primary">
+              <a href="#about" onClick={handleNavClick}>
+                About
+              </a>
+              <a href="#skills" onClick={handleNavClick}>
+                Skills
+              </a>
+              <a href="#work" onClick={handleNavClick}>
+                Work
+              </a>
+              <a href="#process" onClick={handleNavClick}>
+                Process
+              </a>
+              <a href="#contact" onClick={handleNavClick}>
+                Contact
+              </a>
+            </nav>
+
+            <button
+              className="theme-toggle"
+              type="button"
+              onClick={() => setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              <span aria-hidden="true">{theme === 'dark' ? '☀' : '☾'}</span>
+              {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            </button>
+          </div>
         </div>
       </header>
 
